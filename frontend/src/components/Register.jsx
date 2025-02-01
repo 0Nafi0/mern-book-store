@@ -6,15 +6,12 @@ import { useForm } from "react-hook-form";
 const Register = () => {
   const [message, setMessage] = useState("");
 
-  // console.log(registerUser)
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm();
-
-  //   register user
 
   const onSubmit = async (data) => console.log(data);
 
