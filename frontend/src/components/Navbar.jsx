@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 import { HiMiniBars3CenterLeft, HiOutlineShoppingCart } from "react-icons/hi2";
 import { IoSearchOutline } from "react-icons/io5";
-import { HiOutlineUser } from "react-icons/hi2";
-import { HiOutlineHeart } from "react-icons/hi2";
+import { HiOutlineUser, HiOutlineHeart } from "react-icons/hi2";
 import avatarImage from "../assets/avatar.png";
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useAuth } from "../context/AuthContext";
+
 const navigation = [
   {
     name: "Dashboard",
@@ -58,6 +58,13 @@ const Navbar = () => {
         </div>
 
         <div className="relative flex items-center md:space-x-3 space-x-2">
+          <Link
+            to="/donation"
+            className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"
+          >
+            Donate
+          </Link>
+
           <div>
             {currentUser ? (
               <>
@@ -66,7 +73,7 @@ const Navbar = () => {
                 >
                   <img
                     src={avatarImage}
-                    alt="Avatar Image"
+                    alt="Avatar"
                     className="size-7 rounded-full ring-2 ring-blue-500"
                   />
                 </button>
@@ -102,6 +109,7 @@ const Navbar = () => {
               </Link>
             )}
           </div>
+
           <button className="hidden sm:block">
             <HiOutlineHeart className="size-6" />
           </button>
@@ -110,14 +118,10 @@ const Navbar = () => {
             to={"/cart"}
             className="bg-primary p-1 sm:px-6 py-2 flex items-center rounded-sm"
           >
-            <HiOutlineShoppingCart className="" />
-            {cartItems.length > 0 ? (
-              <span className="text-sm font-semibold sm:ml-1">
-                {cartItems.length}
-              </span>
-            ) : (
-              <span className="text-sm font-semibold sm:ml-1">0</span>
-            )}
+            <HiOutlineShoppingCart />
+            <span className="text-sm font-semibold sm:ml-1">
+              {cartItems.length > 0 ? cartItems.length : 0}
+            </span>
           </Link>
         </div>
       </nav>
