@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
-import BookCard from "../books/BookCard";
-
+import { useState } from "react";
+import BookCard from "../Books/BookCard";
+import { useFetchAllBooksQuery } from "../../redux/features/cart/booksApi";
 // Import Swiper React components
 import { Swiper, SwiperSlide } from "swiper/react";
 
@@ -21,17 +21,9 @@ const categories = [
 ];
 
 const TopSellers = () => {
-  const [books, setBooks] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("Choose a genre");
 
-  useEffect(() => {
-    async function fetchBooks() {
-      const res = await fetch("books.json");
-      const data = await res.json();
-      setBooks(data);
-    }
-    fetchBooks();
-  }, []);
+  const { data: books = [] } = useFetchAllBooksQuery();
 
   const filteredBooks =
     selectedCategory === "Choose a genre"
