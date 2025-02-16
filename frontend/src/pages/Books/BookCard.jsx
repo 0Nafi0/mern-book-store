@@ -1,20 +1,28 @@
 /* eslint-disable react/prop-types */
 
 import { FiShoppingCart } from "react-icons/fi";
+import { MdOutlineEventAvailable } from "react-icons/md";
 import { getImageURL } from "../../utils/getImageURL";
 
 import { Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../redux/features/cart/cartSlice";
+import { rentBook } from "../../redux/features/cart/rentSlice";
 
 const BookCard = ({ book }) => {
   const dispatch = useDispatch();
+
   const handleAddToCart = (product) => {
     dispatch(addToCart(product));
   };
+
+  const handleRentBook = (product) => {
+    dispatch(rentBook(product)); // Dispatch rent action
+  };
+
   return (
-    <div className=" rounded-lg transition-shadow duration-300">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:h-72  sm:justify-center gap-4">
+    <div className="rounded-lg transition-shadow duration-300">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:h-72 sm:justify-center gap-4">
         <div className="sm:h-72 sm:flex-shrink-0 border rounded-md">
           <Link to={`/books/${book._id}`}>
             <img
@@ -42,13 +50,24 @@ const BookCard = ({ book }) => {
               $ {book?.oldPrice}
             </span>
           </p>
-          <button
-            onClick={() => handleAddToCart(book)}
-            className="bg-yellow-500 text-black px-6 py-2 rounded-md shadow flex items-center gap-2 hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:scale-105"
-          >
-            <FiShoppingCart className="" />
-            <span>Add to Cart</span>
-          </button>
+
+          {/* Buttons Section */}
+          <div className="flex gap-3">
+            <button
+              onClick={() => handleAddToCart(book)}
+              className="bg-yellow-500 text-black px-6 py-2 rounded-md shadow flex items-center gap-2 hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:scale-105"
+            >
+              <FiShoppingCart className="" />
+              <span>Add to Cart</span>
+            </button>
+            <button
+              onClick={() => handleRentBook(book)}
+              className="bg-green-500 text-white px-6 py-2 rounded-md shadow flex items-center gap-2 hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105"
+            >
+              <MdOutlineEventAvailable className="" />
+              <span>Rent</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -7,6 +7,7 @@ import Cartpage from "../pages/Books/CartPage";
 import CheckoutPage from "../pages/Books/CheckoutPage";
 import SingleBook from "../pages/Books/SingleBook";
 import Donation from "../pages/donation/donation";
+import RentedBooks from "../pages/Books/RentedBooks";
 
 const router = createBrowserRouter([
   {
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
         path: "/books/:id",
         element: <SingleBook />,
       },
+      {
+        path: "/rented_books",
+        element: <RentedBooks />
+      }
     ],
   },
 ]);

@@ -24,6 +24,11 @@ const navigation = [
     name: "Checkout",
     href: "/checkout",
   },
+  {
+    name: "Rented Books",
+    href: "/rented-books",
+  }
+  
 ];
 
 const Navbar = () => {
