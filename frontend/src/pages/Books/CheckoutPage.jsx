@@ -13,7 +13,11 @@ const CheckoutPage = () => {
         formState: { errors },
     } = useForm();
     
-    const onSubmit = (data) => console.log(data);
+    //const onSubmit = (data) => console.log(data);
+
+    const [createOrder, {isLoading, error}] = useCreateOrderMutation();
+
+    
 
     return (
         <section>

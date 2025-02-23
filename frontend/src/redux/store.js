@@ -8,9 +8,10 @@ export const store = configureStore({
     cart: cartReducer,
     rent: rentReducer,
     [booksApi.reducerPath]: booksApi.reducer,
+    [ordersApi.reducerPath]: ordersApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(booksApi.middleware),
+    getDefaultMiddleware().concat(booksApi.middleware, ordersApi.middleware),
 });
 
 export default store;
