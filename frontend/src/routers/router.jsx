@@ -6,9 +6,10 @@ import Register from "../components/Register";
 import Cartpage from "../pages/Books/CartPage";
 import CheckoutPage from "../pages/Books/CheckoutPage";
 import SingleBook from "../pages/Books/SingleBook";
-import Donation from "../pages/donation/donation";s
+import Donation from "../pages/donation/donation";
 import RentedBooks from "../pages/Books/RentedBooks";
 import OrderPage from "../pages/Books/OrderPage";
+import PrivateRoute from "./PrivateRoute";
 
 const router = createBrowserRouter([
   {
@@ -25,7 +26,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/orders",
-        element: <PrivateRoute><OrderPage/></PrivateRoute>
+        element: (
+          <PrivateRoute>
+            <OrderPage />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/about",
@@ -45,7 +50,11 @@ const router = createBrowserRouter([
       },
       {
         path: "/checkout",
-        element:  <PrivateRoute><CheckoutPage/></PrivateRoute>,
+        element: (
+          <PrivateRoute>
+            <CheckoutPage />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/books/:id",
@@ -53,8 +62,8 @@ const router = createBrowserRouter([
       },
       {
         path: "/rented_books",
-        element: <RentedBooks />
-      }
+        element: <RentedBooks />,
+      },
     ],
   },
 ]);
