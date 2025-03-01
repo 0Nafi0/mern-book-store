@@ -1,16 +1,15 @@
 /* eslint-disable react/prop-types */
-
 import { FiShoppingCart } from "react-icons/fi";
 import { MdOutlineEventAvailable } from "react-icons/md";
 import { getImageURL } from "../../utils/getImageURL";
-
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../redux/features/cart/cartSlice";
 import { rentBook } from "../../redux/features/cart/rentSlice";
 
 const BookCard = ({ book }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Import and use useNavigate
 
   const handleAddToCart = (product) => {
     dispatch(addToCart(product));
@@ -18,6 +17,7 @@ const BookCard = ({ book }) => {
 
   const handleRentBook = (product) => {
     dispatch(rentBook(product)); // Dispatch rent action
+    navigate("/rented-books"); // Navigate to RentedBooks page
   };
 
   return (
@@ -27,7 +27,7 @@ const BookCard = ({ book }) => {
           <Link to={`/books/${book._id}`}>
             <img
               src={`${getImageURL(book?.coverImage)}`}
-              alt=""
+              alt={book?.title}
               className="w-full bg-cover p-2 rounded-md cursor-pointer hover:scale-105 transition-all duration-200"
             />
           </Link>
@@ -57,14 +57,14 @@ const BookCard = ({ book }) => {
               onClick={() => handleAddToCart(book)}
               className="bg-yellow-500 text-black px-6 py-2 rounded-md shadow flex items-center gap-2 hover:bg-yellow-600 transition duration-300 ease-in-out transform hover:scale-105"
             >
-              <FiShoppingCart className="" />
+              <FiShoppingCart />
               <span>Add to Cart</span>
             </button>
             <button
               onClick={() => handleRentBook(book)}
               className="bg-green-500 text-white px-6 py-2 rounded-md shadow flex items-center gap-2 hover:bg-green-600 transition duration-300 ease-in-out transform hover:scale-105"
             >
-              <MdOutlineEventAvailable className="" />
+              <MdOutlineEventAvailable />
               <span>Rent</span>
             </button>
           </div>
