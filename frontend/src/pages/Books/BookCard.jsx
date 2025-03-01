@@ -4,20 +4,40 @@ import { MdOutlineEventAvailable } from "react-icons/md";
 import { getImageURL } from "../../utils/getImageURL";
 import { Link, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../../redux/features/cart/cartSlice";
-import { rentBook } from "../../redux/features/cart/rentSlice";
+import { addToCartAsync } from "../../redux/features/cart/cartSlice";
+import { rentBookAsync } from "../../redux/features/cart/rentSlice";
 
 const BookCard = ({ book }) => {
   const dispatch = useDispatch();
-  const navigate = useNavigate(); // Import and use useNavigate
+  const navigate = useNavigate();
 
-  const handleAddToCart = (product) => {
-    dispatch(addToCart(product));
+  const handleAddToCart = async (product) => {
+    try {
+      await dispatch(addToCartAsync(product)).unwrap();
+      // Optional: Show success message
+      alert("Book added to cart successfully");
+    } catch (error) {
+      // Handle error (e.g., user not logged in)
+      if (error.message === "Authentication required") {
+        navigate("/login");
+      } else {
+        alert(error.message || "Failed to add book to cart");
+      }
+    }
   };
 
-  const handleRentBook = (product) => {
-    dispatch(rentBook(product)); // Dispatch rent action
-    navigate("/rented-books"); // Navigate to RentedBooks page
+  const handleRentBook = async (product) => {
+    try {
+      await dispatch(rentBookAsync(product)).unwrap();
+      alert("Book rented successfully");
+      navigate("/rented-books");
+    } catch (error) {
+      if (error.message === "Authentication required") {
+        navigate("/login");
+      } else {
+        alert(error.message || "Failed to rent book");
+      }
+    }
   };
 
   return (

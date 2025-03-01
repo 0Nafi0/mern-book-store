@@ -3,8 +3,8 @@ import { useParams, useLocation } from "react-router-dom";
 import { useFetchBookByIdQuery } from "../../redux/features/cart/booksApi";
 import { getImageURL } from "../../utils/getImageURL";
 import { useDispatch } from "react-redux";
-import { addToCart } from "../../redux/features/cart/cartSlice";
-import { rentBook } from "../../redux/features/cart/rentSlice";
+import { addToCartAsync } from "../../redux/features/cart/cartSlice";
+import { rentBookAsync } from "../../redux/features/cart/rentSlice";
 import { FiShoppingCart } from "react-icons/fi";
 import { MdOutlineEventAvailable } from "react-icons/md";
 
@@ -14,12 +14,22 @@ const SingleBook = () => {
   const { data: book, isLoading, isError } = useFetchBookByIdQuery(id);
   const dispatch = useDispatch();
 
-  const handleAddToCart = (product) => {
-    dispatch(addToCart(product));
+  const handleAddToCart = async (product) => {
+    try {
+      await dispatch(addToCartAsync(product)).unwrap();
+      alert("Book added to cart successfully");
+    } catch (error) {
+      alert(error.message || "Failed to add book to cart");
+    }
   };
 
-  const handleRentBook = (product) => {
-    dispatch(rentBook(product));
+  const handleRentBook = async (product) => {
+    try {
+      await dispatch(rentBookAsync(product)).unwrap();
+      alert("Book rented successfully");
+    } catch (error) {
+      alert(error.message || "Failed to rent book");
+    }
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -36,10 +46,19 @@ const SingleBook = () => {
           className="mb-8"
         />
         <div className="mb-5">
-          <p className="text-gray-700 mb-2"><strong>Author:</strong> {book.author || "admin"}</p>
-          <p className="text-gray-700 mb-4"><strong>Published:</strong> {new Date(book?.createdAt).toLocaleDateString()}</p>
-          <p className="text-gray-700 mb-4 capitalize"><strong>Category:</strong> {book?.category}</p>
-          <p className="text-gray-700"><strong>Description:</strong> {book.description}</p>
+          <p className="text-gray-700 mb-2">
+            <strong>Author:</strong> {book.author || "admin"}
+          </p>
+          <p className="text-gray-700 mb-4">
+            <strong>Published:</strong>{" "}
+            {new Date(book?.createdAt).toLocaleDateString()}
+          </p>
+          <p className="text-gray-700 mb-4 capitalize">
+            <strong>Category:</strong> {book?.category}
+          </p>
+          <p className="text-gray-700">
+            <strong>Description:</strong> {book.description}
+          </p>
         </div>
 
         {/* Buttons Section */}

@@ -31,6 +31,43 @@ const userSchema = new mongoose.Schema(
     verificationCodeExpires: {
       type: Date,
     },
+    cart: [
+      {
+        book: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Book",
+        },
+        quantity: {
+          type: Number,
+          default: 1,
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+    rentals: [
+      {
+        book: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Book",
+        },
+        rentedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        returnDate: {
+          type: Date,
+          required: true,
+        },
+        status: {
+          type: String,
+          enum: ["active", "returned", "overdue"],
+          default: "active",
+        },
+      },
+    ],
   },
   {
     timestamps: true,

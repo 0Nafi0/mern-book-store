@@ -3,9 +3,10 @@ import { HiMiniBars3CenterLeft, HiOutlineShoppingCart } from "react-icons/hi2";
 import { IoSearchOutline } from "react-icons/io5";
 import { HiOutlineUser, HiOutlineHeart } from "react-icons/hi2";
 import avatarImage from "../assets/avatar.png";
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { useAuth } from "../context/AuthContext";
+import { fetchCart } from "../redux/features/cart/cartSlice";
 
 const navigation = [
   {
@@ -27,14 +28,20 @@ const navigation = [
   {
     name: "Rented Books",
     href: "/rented-books",
-  }
-  
+  },
 ];
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.cartItems);
   const { currentUser, logout } = useAuth();
+
+  useEffect(() => {
+    if (currentUser) {
+      dispatch(fetchCart());
+    }
+  }, [currentUser, dispatch]);
 
   const handleLogout = async () => {
     try {
