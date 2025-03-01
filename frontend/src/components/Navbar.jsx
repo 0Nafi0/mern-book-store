@@ -34,7 +34,7 @@ const navigation = [
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dispatch = useDispatch();
-  const cartItems = useSelector((state) => state.cart.cartItems);
+  const cartItems = useSelector((state) => state.cart.cartItems) || [];
   const { currentUser, logout } = useAuth();
 
   useEffect(() => {
@@ -132,7 +132,7 @@ const Navbar = () => {
           >
             <HiOutlineShoppingCart />
             <span className="text-sm font-semibold sm:ml-1">
-              {cartItems.length > 0 ? cartItems.length : 0}
+              {Array.isArray(cartItems) ? cartItems.length : 0}
             </span>
           </Link>
         </div>

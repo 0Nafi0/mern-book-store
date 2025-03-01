@@ -2,8 +2,8 @@ const User = require("./user.model");
 
 const addToCart = async (req, res) => {
   try {
-    const userId = req.user.userId; // From auth middleware
-    const { bookId, quantity = 1 } = req.body;
+    const userId = req.user.userId;
+    const { bookId } = req.body;
 
     const user = await User.findById(userId);
     if (!user) {
@@ -16,21 +16,17 @@ const addToCart = async (req, res) => {
     );
 
     if (existingCartItem) {
-      // Update quantity if book already in cart
-      existingCartItem.quantity += quantity;
+      existingCartItem.quantity += 1;
     } else {
-      // Add new book to cart
       user.cart.push({
         book: bookId,
-        quantity,
+        quantity: 1,
         addedAt: new Date(),
       });
     }
 
     await user.save();
-
-    // Populate the cart items with book details
-    await user.populate("cart.book");
+    await user.populate("cart.book"); // Make sure to populate book details
 
     res.status(200).json({
       message: "Book added to cart successfully",
@@ -38,7 +34,7 @@ const addToCart = async (req, res) => {
     });
   } catch (error) {
     console.error("Add to cart error:", error);
-    res.status(500).json({ message: "Failed to add to cart" });
+    res.status(500).json({ message: "Failed to add book to cart" });
   }
 };
 
@@ -58,6 +54,28 @@ const getCart = async (req, res) => {
   }
 };
 
+const clearCart = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.cart = [];
+    await user.save();
+
+    res.status(200).json({
+      message: "Cart cleared successfully",
+      cart: [],
+    });
+  } catch (error) {
+    console.error("Clear cart error:", error);
+    res.status(500).json({ message: "Failed to clear cart" });
+  }
+};
+
 const removeFromCart = async (req, res) => {
   try {
     const userId = req.user.userId;
@@ -68,8 +86,11 @@ const removeFromCart = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
+    // Remove the specific book from cart
     user.cart = user.cart.filter((item) => item.book.toString() !== bookId);
+
     await user.save();
+    await user.populate("cart.book");
 
     res.status(200).json({
       message: "Book removed from cart successfully",
@@ -77,35 +98,13 @@ const removeFromCart = async (req, res) => {
     });
   } catch (error) {
     console.error("Remove from cart error:", error);
-    res.status(500).json({ message: "Failed to remove from cart" });
-  }
-};
-
-const clearCart = async (req, res) => {
-  try {
-    const userId = req.user.userId;
-
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    user.cart = [];
-    await user.save();
-
-    res.status(200).json({
-      message: "Cart cleared successfully",
-      cart: user.cart,
-    });
-  } catch (error) {
-    console.error("Clear cart error:", error);
-    res.status(500).json({ message: "Failed to clear cart" });
+    res.status(500).json({ message: "Failed to remove book from cart" });
   }
 };
 
 module.exports = {
   addToCart,
   getCart,
-  removeFromCart,
   clearCart,
+  removeFromCart,
 };

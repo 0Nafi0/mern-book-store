@@ -36,6 +36,7 @@ const userSchema = new mongoose.Schema(
         book: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Book",
+          required: true,
         },
         quantity: {
           type: Number,
@@ -52,19 +53,23 @@ const userSchema = new mongoose.Schema(
         book: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "Book",
+          required: true,
         },
-        rentedAt: {
-          type: Date,
-          default: Date.now,
-        },
-        returnDate: {
+        rentalStartDate: {
           type: Date,
           required: true,
         },
-        status: {
-          type: String,
-          enum: ["active", "returned", "overdue"],
-          default: "active",
+        rentalEndDate: {
+          type: Date,
+          required: true,
+        },
+        rentalPrice: {
+          type: Number,
+          required: true,
+        },
+        returned: {
+          type: Boolean,
+          default: false,
         },
       },
     ],

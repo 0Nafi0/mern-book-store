@@ -30,7 +30,6 @@ const BookCard = ({ book }) => {
     try {
       await dispatch(rentBookAsync(product)).unwrap();
       alert("Book rented successfully");
-      navigate("/rented-books");
     } catch (error) {
       if (error.message === "Authentication required") {
         navigate("/login");

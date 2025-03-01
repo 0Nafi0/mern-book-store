@@ -13,7 +13,9 @@ export const fetchRentals = createAsyncThunk(
       });
       return response.data.rentals;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(
+        error.response?.data || { message: "Failed to fetch rentals" }
+      );
     }
   }
 );
@@ -30,7 +32,9 @@ export const rentBookAsync = createAsyncThunk(
       );
       return response.data.rentals;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      return rejectWithValue(
+        error.response?.data || { message: "Failed to rent book" }
+      );
     }
   }
 );

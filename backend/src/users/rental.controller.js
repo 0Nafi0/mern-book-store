@@ -1,13 +1,16 @@
 const User = require("./user.model");
+const Book = require("../books/book.model");
 
 const addToRentals = async (req, res) => {
   try {
     const userId = req.user.userId;
     const { bookId } = req.body;
 
-    // Calculate return date (30 days from now)
-    const returnDate = new Date();
-    returnDate.setDate(returnDate.getDate() + 30);
+    // Find the book to get its rental price
+    const book = await Book.findById(bookId);
+    if (!book) {
+      return res.status(404).json({ message: "Book not found" });
+    }
 
     const user = await User.findById(userId);
     if (!user) {
@@ -16,25 +19,31 @@ const addToRentals = async (req, res) => {
 
     // Check if book is already rented
     const existingRental = user.rentals.find(
-      (rental) =>
-        rental.book.toString() === bookId && rental.status === "active"
+      (rental) => rental.book.toString() === bookId && !rental.returned
     );
 
     if (existingRental) {
       return res.status(400).json({ message: "Book already rented" });
     }
 
+    // Calculate rental dates and price
+    const rentalStartDate = new Date();
+    const rentalEndDate = new Date();
+    rentalEndDate.setDate(rentalEndDate.getDate() + 30); // 30 days rental period
+
+    // Calculate rental price (using daily rate)
+    const rentalPrice = book.rentalPricePerDay * 30; // 30 days rental price
+
     // Add new rental
     user.rentals.push({
       book: bookId,
-      rentedAt: new Date(),
-      returnDate,
-      status: "active",
+      rentalStartDate,
+      rentalEndDate,
+      rentalPrice,
+      returned: false,
     });
 
     await user.save();
-
-    // Populate the rental items with book details
     await user.populate("rentals.book");
 
     res.status(200).json({

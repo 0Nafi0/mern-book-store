@@ -49,14 +49,17 @@ const RentedBooks = () => {
     }
   };
 
-  const activeRentals = rentedBooks.filter(
-    (rental) => rental.status === "active"
-  );
-  const totalPriceForCheckout =
-    activeRentals.reduce(
-      (acc, rental) => acc + (rental.book?.newPrice || 0),
-      0
-    ) * 0.25; // Calculate 1/4th of the total book price
+  const formatDate = (dateString) => {
+    if (!dateString) return "Not available";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
+  const activeRentals = rentedBooks.filter((rental) => !rental.returned);
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -96,16 +99,21 @@ const RentedBooks = () => {
                       {rental.book?.title}
                     </Link>
                     <p className="text-sm text-gray-500 mt-1">
-                      Status: {rental.status}
+                      Status: {rental.returned ? "Returned" : "Active"}
                     </p>
                     <p className="text-sm text-gray-500">
-                      Return by:{" "}
-                      {new Date(rental.returnDate).toLocaleDateString()}
+                      Rented on: {formatDate(rental.rentalStartDate)}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Return by: {formatDate(rental.rentalEndDate)}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Rental Price: ${rental.rentalPrice?.toFixed(2)}
                     </p>
                   </div>
 
                   <div className="flex gap-2 mt-3">
-                    {rental.status === "active" && (
+                    {!rental.returned && (
                       <button
                         onClick={() => handleReturnBook(rental.book?._id)}
                         className="bg-sky-500 text-white px-3 py-1 rounded-md hover:bg-sky-600 transition"
@@ -128,10 +136,19 @@ const RentedBooks = () => {
           {activeRentals.length > 0 && (
             <div className="mt-6 text-center">
               <p className="text-lg font-semibold mb-4">
-                Total Rental Cost: ${totalPriceForCheckout.toFixed(2)}
+                Total Rental Cost: $
+                {activeRentals
+                  .reduce(
+                    (total, rental) => total + (rental.rentalPrice || 0),
+                    0
+                  )
+                  .toFixed(2)}
               </p>
               <Link
-                to={`/checkout?totalPrice=${totalPriceForCheckout}`}
+                to={`/checkout?totalPrice=${activeRentals.reduce(
+                  (total, rental) => total + (rental.rentalPrice || 0),
+                  0
+                )}`}
                 className="bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-600 transition inline-block"
               >
                 Proceed to Payment
