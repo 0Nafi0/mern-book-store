@@ -28,15 +28,77 @@ const BookCard = ({ book }) => {
 
   const handleRentBook = async (product) => {
     try {
-      await dispatch(rentBookAsync(product)).unwrap();
-      alert("Book rented successfully");
+      // Show rental options dialog
+      const rentalType = await showRentalDialog(product);
+      if (!rentalType) return; // User cancelled
+
+      console.log("Attempting to rent book:", {
+        bookId: product._id,
+        rentalType: rentalType,
+      });
+
+      const result = await dispatch(
+        rentBookAsync({
+          bookId: product._id,
+          rentalType: rentalType,
+        })
+      ).unwrap();
+
+      console.log("Rental result:", result);
+      alert("Book added to rentals successfully");
     } catch (error) {
+      console.error("Rental error:", error);
       if (error.message === "Authentication required") {
         navigate("/login");
       } else {
         alert(error.message || "Failed to rent book");
       }
     }
+  };
+
+  const showRentalDialog = (book) => {
+    return new Promise((resolve) => {
+      const options = [
+        { label: "Daily", price: book.rentalPricePerDay, type: "daily" },
+        { label: "Weekly", price: book.rentalPricePerWeek, type: "weekly" },
+        { label: "Monthly", price: book.rentalPricePerMonth, type: "monthly" },
+      ];
+
+      const dialog = document.createElement("div");
+      dialog.className =
+        "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50";
+      dialog.innerHTML = `
+        <div class="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
+          <h3 class="text-xl font-bold mb-4">Select Rental Period</h3>
+          <div class="space-y-3">
+            ${options
+              .map(
+                (option) => `
+              <button 
+                class="w-full p-3 text-left border rounded hover:bg-gray-100 flex justify-between items-center"
+                data-type="${option.type}"
+              >
+                <span>${option.label}</span>
+                <span>$${option.price?.toFixed(2) || "N/A"}</span>
+              </button>
+            `
+              )
+              .join("")}
+          </div>
+          <button class="mt-4 w-full p-2 bg-gray-200 rounded" data-type="cancel">Cancel</button>
+        </div>
+      `;
+
+      document.body.appendChild(dialog);
+
+      dialog.addEventListener("click", (e) => {
+        const type = e.target.closest("button")?.dataset.type;
+        if (type) {
+          document.body.removeChild(dialog);
+          resolve(type === "cancel" ? null : type);
+        }
+      });
+    });
   };
 
   return (

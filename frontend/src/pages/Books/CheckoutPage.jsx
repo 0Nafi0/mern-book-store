@@ -27,6 +27,26 @@ const CheckoutPage = () => {
 
   const onSubmit = async (data) => {
     const token = localStorage.getItem("token");
+    const queryParams = new URLSearchParams(window.location.search);
+    const isRental = queryParams.get("rental") === "true";
+
+    // Calculate rental dates based on type
+    const startDate = new Date();
+    let endDate = new Date();
+    const rentalType = queryParams.get("rentalType");
+
+    switch (rentalType) {
+      case "daily":
+        endDate.setDate(endDate.getDate() + 1);
+        break;
+      case "weekly":
+        endDate.setDate(endDate.getDate() + 7);
+        break;
+      case "monthly":
+        endDate.setDate(endDate.getDate() + 30);
+        break;
+    }
+
     const orderData = {
       name: data.name,
       email: data.email,
@@ -37,8 +57,17 @@ const CheckoutPage = () => {
         state: data.state,
         zipcode: data.zipcode,
       },
-      productIds: cartItems.map((item) => item.book._id),
+      productIds: isRental ? [] : cartItems.map((item) => item.book._id),
       totalPrice: totalPrice,
+      orderType: isRental ? "rental" : "purchase",
+      rentalDetails: isRental
+        ? {
+            bookId: queryParams.get("bookId"),
+            rentalType: rentalType,
+            rentalStartDate: startDate,
+            rentalEndDate: endDate,
+          }
+        : undefined,
     };
 
     try {
@@ -50,17 +79,18 @@ const CheckoutPage = () => {
         },
         body: JSON.stringify(orderData),
       });
+
       const result = await response.json();
+      console.log("Order creation result:", result);
 
       if (response.ok && result.url) {
-        // Open SSLCommerz payment gateway in a new tab
         window.open(result.url, "_blank");
       } else {
         alert("Failed to place order: " + (result.message || "Unknown error"));
       }
     } catch (error) {
       console.error("Error placing order:", error);
-      alert("Something went wrong. Please try again.");
+      alert("Failed to place order: " + (error.message || "Unknown error"));
     }
   };
 

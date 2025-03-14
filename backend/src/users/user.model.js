@@ -1,6 +1,27 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 
+const rentalSchema = new mongoose.Schema({
+  book: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Book",
+    required: true,
+  },
+  rentalStartDate: Date,
+  rentalEndDate: Date,
+  rentalPrice: Number,
+  rentalType: String,
+  returned: {
+    type: Boolean,
+    default: false,
+  },
+  paymentStatus: {
+    type: String,
+    enum: ["pending", "completed", "failed", "cancelled"],
+    default: "pending",
+  },
+});
+
 const userSchema = new mongoose.Schema(
   {
     username: {
@@ -48,31 +69,7 @@ const userSchema = new mongoose.Schema(
         },
       },
     ],
-    rentals: [
-      {
-        book: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Book",
-          required: true,
-        },
-        rentalStartDate: {
-          type: Date,
-          required: true,
-        },
-        rentalEndDate: {
-          type: Date,
-          required: true,
-        },
-        rentalPrice: {
-          type: Number,
-          required: true,
-        },
-        returned: {
-          type: Boolean,
-          default: false,
-        },
-      },
-    ],
+    rentals: [rentalSchema],
   },
   {
     timestamps: true,

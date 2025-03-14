@@ -39,6 +39,20 @@ const orderSchema = new mongoose.Schema(
       enum: ["pending", "completed", "failed", "cancelled"],
       default: "pending",
     },
+    orderType: {
+      type: String,
+      enum: ["purchase", "rental"],
+      required: true,
+    },
+    rentalDetails: {
+      bookId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Book",
+      },
+      rentalType: String,
+      rentalStartDate: Date,
+      rentalEndDate: Date,
+    },
   },
   {
     timestamps: true,

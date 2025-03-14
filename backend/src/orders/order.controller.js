@@ -1,5 +1,6 @@
 const Order = require("./order.model");
 const SSLCommerzPayment = require("sslcommerz-lts");
+const User = require("../users/user.model");
 require("dotenv").config();
 
 const store_id = process.env.SSLCOMMERZ_STORE_ID;
@@ -20,6 +21,36 @@ if (!store_id || !store_passwd) {
 
 const createAOrder = async (req, res) => {
   try {
+    console.log("Received order data:", req.body);
+
+    // Validate required fields
+    const { name, email, phone, address, productIds, totalPrice, orderType } =
+      req.body;
+
+    if (
+      !name ||
+      !email ||
+      !phone ||
+      !address ||
+      !productIds ||
+      !totalPrice ||
+      !orderType
+    ) {
+      console.error("Missing required fields:", {
+        name: !!name,
+        email: !!email,
+        phone: !!phone,
+        address: !!address,
+        productIds: !!productIds,
+        totalPrice: !!totalPrice,
+        orderType: !!orderType,
+      });
+      return res.status(400).json({
+        message: "Missing required fields",
+        details: "Please provide all required order information",
+      });
+    }
+
     const newOrder = await Order(req.body);
     const savedOrder = await newOrder.save();
 
@@ -80,6 +111,7 @@ const createAOrder = async (req, res) => {
     res.status(500).json({
       message: "Failed to create order",
       details: error.message,
+      stack: error.stack,
     });
   }
 };
@@ -89,15 +121,54 @@ const handlePaymentSuccess = async (req, res) => {
     const { transactionId } = req.params;
     const orderId = transactionId.split("_")[0];
 
-    const order = await Order.findByIdAndUpdate(
-      orderId,
-      { paymentStatus: "completed" },
-      { new: true }
-    );
+    console.log("Processing payment success for order:", orderId);
 
+    const order = await Order.findById(orderId);
+    if (!order) {
+      console.error("Order not found:", orderId);
+      throw new Error("Order not found");
+    }
+
+    // Update order payment status
+    order.paymentStatus = "completed";
+    await order.save();
+
+    console.log("Order updated with payment status:", order);
+
+    // If it's a rental order, update the rental in user's rentals
+    if (order.orderType === "rental" && order.rentalDetails) {
+      const user = await User.findOne({ email: order.email });
+
+      if (user) {
+        console.log("Found user for rental update:", user.email);
+
+        // Find the rental and update its status
+        const rental = user.rentals.find(
+          (r) => r.book.toString() === order.rentalDetails.bookId.toString()
+        );
+
+        if (rental) {
+          rental.paymentStatus = "completed";
+          rental.rentalStartDate = order.rentalDetails.rentalStartDate;
+          rental.rentalEndDate = order.rentalDetails.rentalEndDate;
+
+          await user.save();
+          console.log("Updated rental payment status:", rental);
+        } else {
+          console.log(
+            "No matching rental found for book:",
+            order.rentalDetails.bookId
+          );
+        }
+      } else {
+        console.log("User not found for email:", order.email);
+      }
+    }
+
+    // Redirect to success page
     res.redirect("http://localhost:5173/payment/success");
   } catch (error) {
-    console.error("Error handling payment success", error);
+    console.error("Payment success handler error:", error);
     res.redirect("http://localhost:5173/payment/error");
   }
 };

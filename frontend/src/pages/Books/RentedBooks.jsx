@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { getImageURL } from "../../utils/getImageURL";
@@ -13,12 +13,60 @@ const RentedBooks = () => {
   const dispatch = useDispatch();
   const rentedBooks = useSelector((state) => state.rent.rentedBooks);
   const rentStatus = useSelector((state) => state.rent.status);
+  const [countdowns, setCountdowns] = useState({});
+
+  useEffect(() => {
+    dispatch(fetchRentals());
+  }, []);
 
   useEffect(() => {
     if (rentStatus === "idle") {
       dispatch(fetchRentals());
     }
   }, [rentStatus, dispatch]);
+
+  useEffect(() => {
+    const updateCountdowns = () => {
+      const now = new Date().getTime();
+      const newCountdowns = {};
+
+      rentedBooks.forEach((rental) => {
+        console.log("Rental status:", {
+          id: rental._id,
+          paymentStatus: rental.paymentStatus,
+          returned: rental.returned,
+          endDate: rental.rentalEndDate,
+        });
+
+        if (rental.paymentStatus === "completed" && !rental.returned) {
+          const endDate = new Date(rental.rentalEndDate).getTime();
+          const timeLeft = endDate - now;
+
+          if (timeLeft > 0) {
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor(
+              (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+            );
+            const minutes = Math.floor(
+              (timeLeft % (1000 * 60 * 60)) / (1000 * 60)
+            );
+
+            newCountdowns[rental._id] = `${days}d ${hours}h ${minutes}m`;
+          } else {
+            newCountdowns[rental._id] = "Expired";
+          }
+        }
+      });
+
+      setCountdowns(newCountdowns);
+    };
+
+    updateCountdowns();
+
+    const timer = setInterval(updateCountdowns, 60000);
+
+    return () => clearInterval(timer);
+  }, [rentedBooks]);
 
   const handleReturnBook = async (bookId) => {
     try {
@@ -110,6 +158,16 @@ const RentedBooks = () => {
                     <p className="text-sm text-gray-500">
                       Rental Price: ${rental.rentalPrice?.toFixed(2)}
                     </p>
+                    <p className="text-sm text-gray-500">
+                      Payment Status: {rental.paymentStatus}
+                    </p>
+                    {rental.paymentStatus === "completed" &&
+                      !rental.returned && (
+                        <p className="text-sm text-orange-500 font-semibold">
+                          Time Remaining:{" "}
+                          {countdowns[rental._id] || "Calculating..."}
+                        </p>
+                      )}
                   </div>
 
                   <div className="flex gap-2 mt-3">
@@ -145,7 +203,11 @@ const RentedBooks = () => {
                   .toFixed(2)}
               </p>
               <Link
-                to={`/checkout?totalPrice=${activeRentals.reduce(
+                to={`/checkout?rental=true&bookId=${
+                  activeRentals[0].book._id
+                }&rentalType=${
+                  activeRentals[0].rentalType
+                }&totalPrice=${activeRentals.reduce(
                   (total, rental) => total + (rental.rentalPrice || 0),
                   0
                 )}`}

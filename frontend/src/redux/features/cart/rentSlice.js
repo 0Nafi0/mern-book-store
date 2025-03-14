@@ -11,6 +11,10 @@ export const fetchRentals = createAsyncThunk(
       const response = await axios.get(`${getBaseUrl()}/api/auth/rentals`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      // Log the rentals data for debugging
+      console.log("Fetched rentals:", response.data);
+
       return response.data.rentals;
     } catch (error) {
       return rejectWithValue(
@@ -22,18 +26,27 @@ export const fetchRentals = createAsyncThunk(
 
 export const rentBookAsync = createAsyncThunk(
   "rent/rentBook",
-  async (book, { rejectWithValue }) => {
+  async ({ bookId, rentalType }, { rejectWithValue }) => {
     try {
-      const token = localStorage.getItem("token");
       const response = await axios.post(
-        `${getBaseUrl()}/api/auth/rentals`,
-        { bookId: book._id },
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${getBaseUrl()}/api/rentals/rent`,
+        {
+          bookId,
+          rentalType,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
       );
       return response.data.rentals;
     } catch (error) {
+      if (error.response?.status === 401) {
+        throw new Error("Authentication required");
+      }
       return rejectWithValue(
-        error.response?.data || { message: "Failed to rent book" }
+        error.response?.data?.message || "Failed to rent book"
       );
     }
   }
