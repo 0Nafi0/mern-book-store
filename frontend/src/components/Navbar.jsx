@@ -70,6 +70,15 @@ const Navbar = () => {
         </div>
 
         <div className="relative flex items-center md:space-x-3 space-x-2">
+          {currentUser && (
+            <Link
+              to="/add-book"
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-all shadow-md hover:shadow-lg"
+            >
+              Add a Book
+            </Link>
+          )}
+
           <Link
             to="/donation"
             className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition"

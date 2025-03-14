@@ -10,6 +10,7 @@ import RentedBooks from "../pages/Books/RentedBooks";
 import OrderPage from "../pages/Books/OrderPage";
 import PrivateRoute from "./PrivateRoute";
 import SingleBook from "../pages/Books/SingleBook";
+import AddBook from "../pages/Books/AddBook";
 
 const router = createBrowserRouter([
   {
@@ -67,6 +68,10 @@ const router = createBrowserRouter([
       {
         path: "/rented-books/:id", // Added this route to handle rented books in SingleBook
         element: <SingleBook />,
+      },
+      {
+        path: "/add-book",
+        element: <AddBook />,
       },
     ],
   },
