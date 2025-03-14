@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 //require("dotenv").config();
 require("dotenv").config();
 const PORT = process.env.PORT || 5000;
+const path = require("path");
 
 // middleware
 app.use(express.json());
@@ -25,6 +26,8 @@ app.use("/api/books", bookRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/auth", userRoutes);
 app.use("/api/rentals", rentalRoutes);
+
+app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 async function main() {
   await mongoose.connect(process.env.DB_URI);

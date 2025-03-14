@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 
@@ -10,32 +10,87 @@ const AddBook = () => {
   } = useForm();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
+
+  // Function to handle image selection and resizing
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Create preview for the selected image
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        // Create canvas for resizing
+        const canvas = document.createElement("canvas");
+        canvas.width = 180;
+        canvas.height = 250;
+        const ctx = canvas.getContext("2d");
+
+        // Draw and resize image on canvas
+        ctx.drawImage(img, 0, 0, 180, 250);
+
+        // Get resized image as data URL
+        const resizedImageUrl = canvas.toDataURL("image/jpeg", 0.85);
+        setImagePreview(resizedImageUrl);
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
+      // Create form data to handle file upload
+      const formData = new FormData();
+
+      // Add all text fields to formData
+      Object.keys(data).forEach((key) => {
+        if (key !== "coverImage") {
+          formData.append(key, data[key]);
+        }
+      });
+
+      // Convert boolean values
+      formData.set("trending", data.trending === "true");
+      formData.set("availableForRent", data.availableForRent === "true");
+
+      // Convert numeric values
+      formData.set("oldPrice", parseFloat(data.oldPrice));
+      formData.set("newPrice", parseFloat(data.newPrice));
+      formData.set("rentalPricePerDay", parseFloat(data.rentalPricePerDay));
+
+      if (data.rentalPricePerWeek) {
+        formData.set("rentalPricePerWeek", parseFloat(data.rentalPricePerWeek));
+      }
+
+      if (data.rentalPricePerMonth) {
+        formData.set(
+          "rentalPricePerMonth",
+          parseFloat(data.rentalPricePerMonth)
+        );
+      }
+
+      formData.set("stock", parseInt(data.stock));
+
+      // Add the image file if selected
+      if (fileInputRef.current.files[0]) {
+        formData.append("coverImage", fileInputRef.current.files[0]);
+      } else if (data.coverImage) {
+        // If URL was provided instead of file
+        formData.append("coverImageUrl", data.coverImage);
+      }
+
       const response = await fetch(
         "http://localhost:5000/api/books/create-book",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...data,
-            trending: data.trending === "true",
-            availableForRent: data.availableForRent === "true",
-            oldPrice: parseFloat(data.oldPrice),
-            newPrice: parseFloat(data.newPrice),
-            rentalPricePerDay: parseFloat(data.rentalPricePerDay),
-            rentalPricePerWeek: data.rentalPricePerWeek
-              ? parseFloat(data.rentalPricePerWeek)
-              : null,
-            rentalPricePerMonth: data.rentalPricePerMonth
-              ? parseFloat(data.rentalPricePerMonth)
-              : null,
-            stock: parseInt(data.stock),
-          }),
+          body: formData,
+          // Don't set Content-Type header when using FormData
+          // The browser will set it automatically with the correct boundary
         }
       );
 
@@ -182,19 +237,49 @@ const AddBook = () => {
             </div>
           </div>
 
-          {/* Cover Image */}
+          {/* Cover Image Upload */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Cover Image URL
+              Cover Image
             </label>
-            <input
-              type="text"
-              {...register("coverImage", { required: true })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
-              placeholder="Enter cover image URL"
-            />
-            {errors.coverImage && (
-              <p className="text-red-500 text-sm mt-1">Required</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Upload a local image (will be resized to 180x250)
+                </p>
+              </div>
+              <div>
+                <input
+                  type="text"
+                  {...register("coverImage")}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200"
+                  placeholder="Or enter image URL"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Alternative: Provide an image URL
+                </p>
+              </div>
+            </div>
+
+            {/* Image Preview */}
+            {imagePreview && (
+              <div className="mt-4">
+                <p className="text-sm font-medium text-gray-700 mb-1">
+                  Preview:
+                </p>
+                <img
+                  src={imagePreview}
+                  alt="Cover preview"
+                  className="h-[250px] w-[180px] object-cover border border-gray-300 rounded-md"
+                />
+              </div>
             )}
           </div>
 
