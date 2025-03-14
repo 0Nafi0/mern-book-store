@@ -49,12 +49,10 @@ const register = async (req, res) => {
              <p>This code will expire in 10 minutes.</p>`,
     });
 
-    res
-      .status(201)
-      .json({
-        message:
-          "Registration successful. Please check your email for verification code.",
-      });
+    res.status(201).json({
+      message:
+        "Registration successful. Please check your email for verification code.",
+    });
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ message: "Registration failed" });
@@ -113,7 +111,7 @@ const login = async (req, res) => {
     const token = jwt.sign(
       { userId: user._id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "24h" }
+      { expiresIn: "7d" }
     );
 
     res.json({
@@ -131,8 +129,22 @@ const login = async (req, res) => {
   }
 };
 
+const verifyToken = async (req, res) => {
+  try {
+    // The user data is already attached by the auth middleware
+    const user = await User.findById(req.user.userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(401).json({ message: "Invalid token" });
+  }
+};
+
 module.exports = {
   register,
   verifyEmail,
   login,
+  verifyToken,
 };

@@ -1,6 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { register, verifyEmail, login } = require("./auth.controller");
+const {
+  register,
+  verifyEmail,
+  login,
+  verifyToken,
+} = require("./auth.controller");
 const {
   addToCart,
   getCart,
@@ -37,5 +42,7 @@ router.delete("/rentals", authMiddleware, clearAllRentals);
 router.get("/profile", authMiddleware, (req, res) => {
   res.json({ user: req.user });
 });
+
+router.get("/verify", authMiddleware, verifyToken);
 
 module.exports = router;

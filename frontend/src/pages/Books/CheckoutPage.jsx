@@ -26,6 +26,7 @@ const CheckoutPage = () => {
   const { register, handleSubmit } = useForm();
 
   const onSubmit = async (data) => {
+    const token = localStorage.getItem("token");
     const orderData = {
       name: data.name,
       email: data.email,
@@ -45,6 +46,7 @@ const CheckoutPage = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(orderData),
       });

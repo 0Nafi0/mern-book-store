@@ -13,7 +13,6 @@ const Login = () => {
   const onSubmit = async (data) => {
     try {
       await loginUser(data.email, data.password);
-      alert("User logged in successfully");
       navigate("/");
     } catch (error) {
       setMessage("Please provide a valid email and password");
@@ -24,7 +23,6 @@ const Login = () => {
   const handleGoogleSignIn = async () => {
     try {
       await signInWithGoogle();
-      alert("User logged in successfully");
       navigate("/");
     } catch (error) {
       alert("Google sign in failed");

@@ -12,25 +12,20 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem("token"));
-
-  const api = axios.create({
-    baseURL: `${getBaseUrl()}/api/auth`,
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
 
   useEffect(() => {
-    if (token) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    // Check for token and user data on component mount
+    const token = localStorage.getItem("token");
+    const savedUser = localStorage.getItem("user");
+    if (token && savedUser) {
+      setCurrentUser(JSON.parse(savedUser));
     }
     setLoading(false);
-  }, [token]);
+  }, []);
 
   const registerUser = async (email, password, username) => {
     try {
-      const response = await api.post("/register", {
+      const response = await axios.post(`${getBaseUrl()}/api/auth/register`, {
         email,
         password,
         username,
@@ -43,10 +38,13 @@ export const AuthProvider = ({ children }) => {
 
   const verifyEmail = async (email, verificationCode) => {
     try {
-      const response = await api.post("/verify-email", {
-        email,
-        verificationCode,
-      });
+      const response = await axios.post(
+        `${getBaseUrl()}/api/auth/verify-email`,
+        {
+          email,
+          verificationCode,
+        }
+      );
       return response.data;
     } catch (error) {
       throw error.response.data;
@@ -55,25 +53,28 @@ export const AuthProvider = ({ children }) => {
 
   const loginUser = async (email, password) => {
     try {
-      const response = await api.post("/login", {
-        email,
-        password,
+      const response = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
-      const { token, user } = response.data;
-      localStorage.setItem("token", token);
-      setToken(token);
-      setCurrentUser(user);
-      return response.data;
+
+      if (!response.ok) throw new Error("Login failed");
+
+      const data = await response.json();
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      setCurrentUser(data.user);
+      return data;
     } catch (error) {
-      throw error.response.data;
+      throw error;
     }
   };
 
   const logout = () => {
     localStorage.removeItem("token");
-    setToken(null);
+    localStorage.removeItem("user");
     setCurrentUser(null);
-    window.location.href = "/";
   };
 
   const value = {
@@ -85,5 +86,9 @@ export const AuthProvider = ({ children }) => {
     logout,
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };

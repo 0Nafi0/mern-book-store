@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useAuth } from "../context/AuthContext";
 import { fetchCart } from "../redux/features/cart/cartSlice";
+import { useNavigate } from "react-router-dom";
 
 const navigation = [
   {
@@ -35,7 +36,8 @@ const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dispatch = useDispatch();
   const cartItems = useSelector((state) => state.cart.cartItems) || [];
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, loading } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (currentUser) {
@@ -46,11 +48,15 @@ const Navbar = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      alert("Logged out successfully");
+      navigate("/");
     } catch (error) {
       console.error(error);
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <header className="max-w-screen-2xl mx-auto px-4 py-6">
@@ -91,12 +97,16 @@ const Navbar = () => {
               <>
                 <button
                   onClick={() => setIsDropdownOpen((prevState) => !prevState)}
+                  className="flex items-center space-x-2"
                 >
                   <img
                     src={avatarImage}
                     alt="Avatar"
                     className="size-7 rounded-full ring-2 ring-blue-500"
                   />
+                  <span className="hidden md:block">
+                    {currentUser.username}
+                  </span>
                 </button>
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md z-40">
@@ -125,8 +135,9 @@ const Navbar = () => {
                 )}
               </>
             ) : (
-              <Link to={"/login"}>
+              <Link to="/login" className="flex items-center space-x-2">
                 <HiOutlineUser className="size-6" />
+                <span className="hidden md:block">Login</span>
               </Link>
             )}
           </div>
